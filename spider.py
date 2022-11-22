@@ -57,9 +57,9 @@ def get_chapter_url_list() -> list[str]:
 def save_novel():
     chapter_url_list = get_chapter_url_list()
     with open(sys.path[0] + '/道诡异仙.txt', 'w', encoding='utf-8') as f:
-        for i in range(len(chapter_url_list)):
-            f.write(get_chapter(chapter_url_list[i]))
-            print(f'第{i}章缓存完毕')
+        for i, v in enumerate(chapter_url_list):
+            f.write(get_chapter(v))
+            print(f'第{i + 1}章缓存完毕')
 
 
 if __name__ == '__main__':
