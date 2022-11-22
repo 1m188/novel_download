@@ -48,8 +48,9 @@ def get_chapter_url_list() -> list[str]:
             res.append(WEBSITE + i.attrs['href'])
 
         next_page = soup.find('span', {'class': 'right'})
-        if 'disabled' in next_page.a.attrs: break
-        url = WEBSITE + next_page.a.attrs['href']
+        next_page_href = next_page.a.attrs.get('href', None)
+        if not next_page_href: break
+        url = WEBSITE + next_page_href
 
     return res
 
