@@ -55,13 +55,22 @@ def get_chapter_url_list() -> list[str]:
     return res
 
 
-def save_novel():
+def save_novel(start_chapter: int = 1):
+    '''
+    保存小说
+
+    @param start_chapter 从第几章开始
+    '''
+
+    print('开始获取章节目录...')
     chapter_url_list = get_chapter_url_list()
     print('章节目录获取完毕')
-    with open(sys.path[0] + '/道诡异仙.txt', 'w', encoding='utf-8') as f:
-        for i, v in enumerate(chapter_url_list):
+    print('开始缓存')
+    with open(sys.path[0] + '/道诡异仙.txt', 'a', encoding='utf-8') as f:
+        for i, v in enumerate(chapter_url_list[start_chapter - 1:]):
             f.write(get_chapter(v))
-            print(f'第{i + 1}章缓存完毕')
+            print(f'第{i + start_chapter}章缓存完毕')
+    print('所有章节缓存完毕！')
 
 
 if __name__ == '__main__':
