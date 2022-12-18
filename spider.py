@@ -34,23 +34,25 @@ def get_chapter(url: str) -> str:
     return title_text + '\n' + cont_text + '\n\n'
 
 
-def get_chapter_url_list() -> list[str]:
+def get_chapter_url_list(url: str, website: str) -> list[str]:
     '''
     获取章节url的列表
+
+    @param url 小说页面（目录页面）地址
+    @param website 小说网站地址
     '''
 
-    url = URL
     res: list[str] = []
 
     while True:
         soup = get_bsobj(url)
         for i in soup.dl.findAll('a'):
-            res.append(WEBSITE + i.attrs['href'])
+            res.append(website + i.attrs['href'])
 
         next_page = soup.find('span', {'class': 'right'})
         next_page_href = next_page.a.attrs.get('href', None)
         if not next_page_href: break
-        url = WEBSITE + next_page_href
+        url = website + next_page_href
 
     return res
 
@@ -63,7 +65,7 @@ def save_novel(start_chapter: int = 1):
     '''
 
     print('开始获取章节目录...')
-    chapter_url_list = get_chapter_url_list()
+    chapter_url_list = get_chapter_url_list(URL, WEBSITE)
     print('章节目录获取完毕')
     print('开始缓存')
     with open(sys.path[0] + '/道诡异仙.txt', 'a', encoding='utf-8') as f:
