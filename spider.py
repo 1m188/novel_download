@@ -68,11 +68,15 @@ class Spider:
 
         return res
 
-    def save_novel(self, file_path: str, start_chapter: int = 1):
+    def save_novel(self,
+                   file_path: str,
+                   is_append: bool,
+                   start_chapter: int = 1):
         '''
         保存小说
 
         @param file_path 保存文件路径
+        @param is_append 是否追加
         @param start_chapter 从第几章开始
         '''
 
@@ -80,7 +84,7 @@ class Spider:
         chapter_url_list = self.get_chapter_url_list()
         print('章节目录获取完毕')
         print('开始缓存')
-        with open(file_path, 'a', encoding='utf-8') as f:
+        with open(file_path, 'a' if is_append else 'w', encoding='utf-8') as f:
             for i, v in enumerate(chapter_url_list[start_chapter - 1:]):
                 f.write(self.get_chapter(v))
                 print(f'第{i + start_chapter}章缓存完毕')
@@ -89,4 +93,4 @@ class Spider:
 
 if __name__ == '__main__':
     spider = Spider(WEBSITE, URL, ENCODING, PARSER)
-    spider.save_novel(sys.path[0] + '/道诡异仙.txt')
+    spider.save_novel(sys.path[0] + '/道诡异仙.txt', False)
