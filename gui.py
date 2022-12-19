@@ -106,7 +106,7 @@ class DownloadPage(QtWidgets.QWidget):
     def save_novel(self):
         sp = spider.Spider(self.line2.text(), self.line1.text(),
                            self.line3.text(), self.line4.text())
-        sp.save_novel()
+        sp.save_novel(sys.path[0] + '/道诡异仙.txt')
 
 
 class GUI(QtWidgets.QWidget):
