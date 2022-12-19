@@ -4,6 +4,7 @@ import PySide6
 from PySide6 import QtWidgets, QtGui, QtCore
 import spider
 
+
 class DownloadPage(QtWidgets.QWidget):
 
     def __init__(
@@ -103,7 +104,9 @@ class DownloadPage(QtWidgets.QWidget):
 
     @QtCore.Slot()
     def save_novel(self):
-        spider.save_novel()
+        sp = spider.Spider(self.line2.text(), self.line1.text(),
+                           self.line3.text(), self.line4.text())
+        sp.save_novel()
 
 
 class GUI(QtWidgets.QWidget):
