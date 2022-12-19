@@ -2,7 +2,42 @@ import sys
 from typing import Optional
 import PySide6
 from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6.QtCore import Slot, Signal
 import spider
+
+
+class DownloadThread(QtCore.QThread):
+    '''
+    用来放置下载操作的线程
+    '''
+
+    def setting(
+        self,
+        spider: spider.Spider,
+        file_path: str,
+        is_append: bool,
+        start_chapter: int,
+    ) -> None:
+        self.spider = spider
+        self.file_path = file_path
+        self.is_append = is_append
+        self.start_chapter = start_chapter
+
+    def run(self) -> None:
+        self.spider.save_novel(self.file_path, self.is_append,
+                               self.start_chapter)
+        return super().run()
+
+
+class NStdout(QtCore.QObject):
+    '''
+    新的标准输出流，用于将print打印出的信息转向到别的地方
+    '''
+
+    msg_comming = Signal(str)
+
+    def write(self, s: str):
+        self.msg_comming.emit(s)
 
 
 class DownloadPage(QtWidgets.QWidget):
@@ -13,6 +48,8 @@ class DownloadPage(QtWidgets.QWidget):
             f: PySide6.QtCore.Qt.WindowType = QtCore.Qt.WindowType.Widget
     ) -> None:
         super().__init__(parent, f)
+        self.th = DownloadThread()
+        self.nstdout = NStdout()
         self.initUI()
 
     def initUI(self):
@@ -25,7 +62,7 @@ class DownloadPage(QtWidgets.QWidget):
 
         self.line1 = QtWidgets.QLineEdit()
         self.line1.setContextMenuPolicy(
-            QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+            QtCore.Qt.ContextMenuPolicy.NoContextMenu)  # 取消右键菜单
         self.line1.setFont(font)
         self.line1.setText(spider.URL)
 
@@ -69,6 +106,11 @@ class DownloadPage(QtWidgets.QWidget):
         self.info.setReadOnly(True)
         self.info.setFont(font)
 
+        # 标准输出流转向
+        self.nstdout.msg_comming.connect(self.print_info)
+        sys.stdout = self.nstdout
+        sys.stderr = self.nstdout
+
         # 开始缓存按钮
         self.saveBtn = QtWidgets.QPushButton()
         self.saveBtn.setFont(font)
@@ -102,11 +144,29 @@ class DownloadPage(QtWidgets.QWidget):
         self.grid.addWidget(self.info, 4, 0, 4, 10)
         self.grid.addWidget(self.saveBtn, 8, 9, 1, 1)
 
-    @QtCore.Slot()
+    @Slot()
     def save_novel(self):
+        '''
+        保存小说
+        '''
         sp = spider.Spider(self.line2.text(), self.line1.text(),
                            self.line3.text(), self.line4.text())
-        sp.save_novel(sys.path[0] + '/道诡异仙.txt', False)
+        file_path = sys.path[0] + '/道诡异仙.txt'
+        is_append = False
+        start_chapter = 1
+        self.th.setting(sp, file_path, is_append, start_chapter)
+        self.th.start()
+
+    @Slot(str)
+    def print_info(self, s: str):
+        '''
+        在textedit里打印提示信息
+
+        @param s 新的提示信息
+        '''
+        self.info.setText(self.info.toPlainText() + s)  # 追加新信息
+        self.info.verticalScrollBar().setValue(
+            self.info.verticalScrollBar().maximumHeight())  # 将滚条设置到最底下
 
 
 class GUI(QtWidgets.QWidget):
