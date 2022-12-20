@@ -143,6 +143,17 @@ class DownloadPage(QtWidgets.QWidget):
 
         self.is_append_checkbox = QtWidgets.QCheckBox()
 
+        # 设置开始章节
+        self.start_chapter_label = QtWidgets.QLabel()
+        self.start_chapter_label.setFont(font)
+        self.start_chapter_label.setText('开始章节')
+
+        self.start_chapter_line = QtWidgets.QLineEdit()
+        self.start_chapter_line.setFont(font)
+        self.start_chapter_line.setText('1')
+        self.start_chapter_line.textEdited.connect(
+            self.start_chapter_line_textEdited)
+
         # 信息输出
         self.info = QtWidgets.QTextEdit()
         self.info.setContextMenuPolicy(
@@ -190,6 +201,10 @@ class DownloadPage(QtWidgets.QWidget):
         self.hbox7.addWidget(self.is_append_label)
         self.hbox7.addWidget(self.is_append_checkbox)
 
+        self.hbox8 = QtWidgets.QHBoxLayout()
+        self.hbox8.addWidget(self.start_chapter_label)
+        self.hbox8.addWidget(self.start_chapter_line)
+
         # 整体布局
         self.grid = QtWidgets.QGridLayout()
         self.setLayout(self.grid)
@@ -200,8 +215,9 @@ class DownloadPage(QtWidgets.QWidget):
         self.grid.addLayout(self.hbox5, 4, 0, 1, 10)
         self.grid.addLayout(self.hbox6, 5, 0, 1, 10)
         self.grid.addLayout(self.hbox7, 6, 0, 1, 10)
-        self.grid.addWidget(self.info, 7, 0, 4, 10)
-        self.grid.addWidget(self.save_btn, 11, 9, 1, 1)
+        self.grid.addLayout(self.hbox8, 7, 0, 1, 10)
+        self.grid.addWidget(self.info, 8, 0, 4, 10)
+        self.grid.addWidget(self.save_btn, 12, 9, 1, 1)
 
     @Slot()
     def save_btn_clicked(self):
@@ -216,6 +232,7 @@ class DownloadPage(QtWidgets.QWidget):
         self.save_path_line.setEnabled(False)
         self.novel_name_line.setEnabled(False)
         self.is_append_checkbox.setEnabled(False)
+        self.start_chapter_line.setEnabled(False)
         self.save_btn.setEnabled(False)
 
         sp = spider.Spider(self.line2.text(), self.line1.text(),
@@ -227,7 +244,7 @@ class DownloadPage(QtWidgets.QWidget):
         is_append = True if self.is_append_checkbox.checkState(
         ) == QtCore.Qt.CheckState.Checked else False
 
-        start_chapter = 1
+        start_chapter = int(self.start_chapter_line.text())
 
         self.th.setting(sp, file_path, is_append, start_chapter)
         self.th.start()
@@ -256,6 +273,7 @@ class DownloadPage(QtWidgets.QWidget):
         self.save_path_line.setEnabled(True)
         self.novel_name_line.setEnabled(True)
         self.is_append_checkbox.setEnabled(True)
+        self.start_chapter_line.setEnabled(True)
         self.save_btn.setEnabled(True)
 
     @Slot()
@@ -265,6 +283,16 @@ class DownloadPage(QtWidgets.QWidget):
         '''
         path = QtWidgets.QFileDialog.getExistingDirectory(self, '选择保存路径')
         if path: self.save_path_line.setText(path)
+
+    @Slot(str)
+    def start_chapter_line_textEdited(self, s: str):
+        '''
+        用于约束开始章节的输入内容
+        '''
+        if not s.isnumeric(): self.start_chapter_line.setText('1')
+        else:
+            x = int(s)
+            if x < 1 or x > 2**31 - 1: self.start_chapter_line.setText('1')
 
 
 class GUI(QtWidgets.QWidget):
