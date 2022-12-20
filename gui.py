@@ -1,3 +1,4 @@
+import os
 import sys
 from typing import Optional
 import PySide6
@@ -241,8 +242,8 @@ class DownloadPage(QtWidgets.QWidget):
         sp = spider.Spider(self.line2.text(), self.line1.text(),
                            self.line3.text(), self.line4.text())
 
-        file_path = self.save_path_line.text(
-        ) + '/' + self.novel_name_line.text()
+        file_path = os.path.join(self.save_path_line.text(),
+                                 self.novel_name_line.text())
 
         is_append = True if self.is_append_checkbox.checkState(
         ) == QtCore.Qt.CheckState.Checked else False
