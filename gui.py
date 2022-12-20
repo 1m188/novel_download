@@ -26,7 +26,6 @@ class DownloadThread(QtCore.QThread):
     def run(self) -> None:
         self.spider.save_novel(self.file_path, self.is_append,
                                self.start_chapter)
-        return super().run()
 
 
 class NStdout(QtCore.QObject):
@@ -49,6 +48,7 @@ class DownloadPage(QtWidgets.QWidget):
     ) -> None:
         super().__init__(parent, f)
         self.th = DownloadThread()
+        self.th.finished.connect(self.save_finished)
         self.nstdout = NStdout()
         self.initUI()
 
@@ -149,6 +149,11 @@ class DownloadPage(QtWidgets.QWidget):
         '''
         保存小说
         '''
+        self.line1.setEnabled(False)
+        self.line2.setEnabled(False)
+        self.line3.setEnabled(False)
+        self.line4.setEnabled(False)
+        self.saveBtn.setEnabled(False)
         sp = spider.Spider(self.line2.text(), self.line1.text(),
                            self.line3.text(), self.line4.text())
         file_path = sys.path[0] + '/道诡异仙.txt'
@@ -167,6 +172,17 @@ class DownloadPage(QtWidgets.QWidget):
         self.info.setText(self.info.toPlainText() + s)  # 追加新信息
         self.info.verticalScrollBar().setValue(
             self.info.verticalScrollBar().maximumHeight())  # 将滚条设置到最底下
+
+    @Slot()
+    def save_finished(self):
+        '''
+        保存完毕之后
+        '''
+        self.line1.setEnabled(True)
+        self.line2.setEnabled(True)
+        self.line3.setEnabled(True)
+        self.line4.setEnabled(True)
+        self.saveBtn.setEnabled(True)
 
 
 class GUI(QtWidgets.QWidget):
