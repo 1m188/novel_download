@@ -6,6 +6,23 @@ from PySide6.QtCore import Slot, Signal
 import spider
 
 
+def singleton(cls, *args, **kw):
+    '''
+    单例装饰器
+
+    @param cls 类
+    @param *args 其余参数
+    @param **kw 其余参数
+    '''
+    instances = {}
+
+    def wrapper():
+        if cls not in instances: instances[cls] = cls(*args, **kw)
+        return instances[cls]
+
+    return wrapper
+
+
 class DownloadThread(QtCore.QThread):
     '''
     用来放置下载操作的线程
@@ -28,6 +45,7 @@ class DownloadThread(QtCore.QThread):
                                self.start_chapter)
 
 
+@singleton
 class NStdout(QtCore.QObject):
     '''
     新的标准输出流，用于将print打印出的信息转向到别的地方
@@ -49,7 +67,6 @@ class DownloadPage(QtWidgets.QWidget):
         super().__init__(parent, f)
         self.th = DownloadThread()
         self.th.finished.connect(self.save_finished)
-        self.nstdout = NStdout()
         self.initUI()
 
     def initUI(self):
@@ -134,9 +151,9 @@ class DownloadPage(QtWidgets.QWidget):
         self.info.setFont(font)
 
         # 标准输出流转向
-        self.nstdout.msg_comming.connect(self.print_info)
-        sys.stdout = self.nstdout
-        sys.stderr = self.nstdout
+        NStdout().msg_comming.connect(self.print_info)
+        sys.stdout = NStdout()
+        sys.stderr = NStdout()
 
         # 开始缓存按钮
         self.save_btn = QtWidgets.QPushButton()
