@@ -58,6 +58,9 @@ class NStdout(QtCore.QObject):
 
 
 class DownloadPage(QtWidgets.QWidget):
+    '''
+    小说下载页面
+    '''
 
     def __init__(
             self,
@@ -296,6 +299,9 @@ class DownloadPage(QtWidgets.QWidget):
 
 
 class GUI(QtWidgets.QWidget):
+    '''
+    主界面
+    '''
 
     def __init__(
             self,
@@ -309,7 +315,7 @@ class GUI(QtWidgets.QWidget):
         self.setWindowTitle('novel download')
 
         self.tab = QtWidgets.QTabWidget()
-        self.tab.setFont(QtGui.QFont('微软雅黑', 12))
+        self.tab.setFont(QtGui.QFont('微软雅黑', 10))
         self.page = DownloadPage()
         self.tab.addTab(self.page, '手机电子书')
 
