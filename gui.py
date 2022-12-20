@@ -245,8 +245,8 @@ class DownloadPage(QtWidgets.QWidget):
         file_path = os.path.join(self.save_path_line.text(),
                                  self.novel_name_line.text())
 
-        is_append = True if self.is_append_checkbox.checkState(
-        ) == QtCore.Qt.CheckState.Checked else False
+        is_append = self.is_append_checkbox.checkState(
+        ) == QtCore.Qt.CheckState.Checked
 
         start_chapter = int(self.start_chapter_line.text())
 
