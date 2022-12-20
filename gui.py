@@ -119,6 +119,13 @@ class DownloadPage(QtWidgets.QWidget):
         self.novel_name_line.setFont(font)
         self.novel_name_line.setText('道诡异仙.txt')
 
+        # 选择是否追加
+        self.is_append_label = QtWidgets.QLabel()
+        self.is_append_label.setFont(font)
+        self.is_append_label.setText('是否从文件最后追加')
+
+        self.is_append_checkbox = QtWidgets.QCheckBox()
+
         # 信息输出
         self.info = QtWidgets.QTextEdit()
         self.info.setContextMenuPolicy(
@@ -162,6 +169,10 @@ class DownloadPage(QtWidgets.QWidget):
         self.hbox6.addWidget(self.novel_name_label)
         self.hbox6.addWidget(self.novel_name_line)
 
+        self.hbox7 = QtWidgets.QHBoxLayout()
+        self.hbox7.addWidget(self.is_append_label)
+        self.hbox7.addWidget(self.is_append_checkbox)
+
         # 整体布局
         self.grid = QtWidgets.QGridLayout()
         self.setLayout(self.grid)
@@ -171,8 +182,9 @@ class DownloadPage(QtWidgets.QWidget):
         self.grid.addLayout(self.hbox4, 3, 0, 1, 10)
         self.grid.addLayout(self.hbox5, 4, 0, 1, 10)
         self.grid.addLayout(self.hbox6, 5, 0, 1, 10)
-        self.grid.addWidget(self.info, 6, 0, 4, 10)
-        self.grid.addWidget(self.save_btn, 10, 9, 1, 1)
+        self.grid.addLayout(self.hbox7, 6, 0, 1, 10)
+        self.grid.addWidget(self.info, 7, 0, 4, 10)
+        self.grid.addWidget(self.save_btn, 11, 9, 1, 1)
 
     @Slot()
     def save_btn_clicked(self):
@@ -186,14 +198,20 @@ class DownloadPage(QtWidgets.QWidget):
         self.save_path_btn.setEnabled(False)
         self.save_path_line.setEnabled(False)
         self.novel_name_line.setEnabled(False)
+        self.is_append_checkbox.setEnabled(False)
         self.save_btn.setEnabled(False)
 
         sp = spider.Spider(self.line2.text(), self.line1.text(),
                            self.line3.text(), self.line4.text())
+
         file_path = self.save_path_line.text(
         ) + '/' + self.novel_name_line.text()
-        is_append = False
+
+        is_append = True if self.is_append_checkbox.checkState(
+        ) == QtCore.Qt.CheckState.Checked else False
+
         start_chapter = 1
+
         self.th.setting(sp, file_path, is_append, start_chapter)
         self.th.start()
 
@@ -220,6 +238,7 @@ class DownloadPage(QtWidgets.QWidget):
         self.save_path_btn.setEnabled(True)
         self.save_path_line.setEnabled(True)
         self.novel_name_line.setEnabled(True)
+        self.is_append_checkbox.setEnabled(True)
         self.save_btn.setEnabled(True)
 
     @Slot()
