@@ -99,6 +99,26 @@ class DownloadPage(QtWidgets.QWidget):
         self.line4.setFont(font)
         self.line4.setText(spider.PARSER)
 
+        # 选择保存路径
+        self.save_path_btn = QtWidgets.QPushButton()
+        self.save_path_btn.setFont(font)
+        self.save_path_btn.setText('选择保存路径')
+        self.save_path_btn.clicked.connect(self.save_path_btn_clicked)
+
+        self.save_path_line = QtWidgets.QLineEdit()
+        self.save_path_line.setFont(font)
+        self.save_path_line.setText(sys.path[0])
+        self.save_path_line.setReadOnly(True)
+
+        # 输入保存文件名
+        self.novel_name_label = QtWidgets.QLabel()
+        self.novel_name_label.setFont(font)
+        self.novel_name_label.setText('输入保存文件名')
+
+        self.novel_name_line = QtWidgets.QLineEdit()
+        self.novel_name_line.setFont(font)
+        self.novel_name_line.setText('道诡异仙.txt')
+
         # 信息输出
         self.info = QtWidgets.QTextEdit()
         self.info.setContextMenuPolicy(
@@ -112,10 +132,10 @@ class DownloadPage(QtWidgets.QWidget):
         sys.stderr = self.nstdout
 
         # 开始缓存按钮
-        self.saveBtn = QtWidgets.QPushButton()
-        self.saveBtn.setFont(font)
-        self.saveBtn.setText('开始缓存')
-        self.saveBtn.clicked.connect(self.save_novel)
+        self.save_btn = QtWidgets.QPushButton()
+        self.save_btn.setFont(font)
+        self.save_btn.setText('开始缓存')
+        self.save_btn.clicked.connect(self.save_btn_clicked)
 
         # 两两横向布局
         self.hbox1 = QtWidgets.QHBoxLayout()
@@ -134,6 +154,14 @@ class DownloadPage(QtWidgets.QWidget):
         self.hbox4.addWidget(self.label4)
         self.hbox4.addWidget(self.line4)
 
+        self.hbox5 = QtWidgets.QHBoxLayout()
+        self.hbox5.addWidget(self.save_path_btn)
+        self.hbox5.addWidget(self.save_path_line)
+
+        self.hbox6 = QtWidgets.QHBoxLayout()
+        self.hbox6.addWidget(self.novel_name_label)
+        self.hbox6.addWidget(self.novel_name_line)
+
         # 整体布局
         self.grid = QtWidgets.QGridLayout()
         self.setLayout(self.grid)
@@ -141,11 +169,13 @@ class DownloadPage(QtWidgets.QWidget):
         self.grid.addLayout(self.hbox2, 1, 0, 1, 10)
         self.grid.addLayout(self.hbox3, 2, 0, 1, 10)
         self.grid.addLayout(self.hbox4, 3, 0, 1, 10)
-        self.grid.addWidget(self.info, 4, 0, 4, 10)
-        self.grid.addWidget(self.saveBtn, 8, 9, 1, 1)
+        self.grid.addLayout(self.hbox5, 4, 0, 1, 10)
+        self.grid.addLayout(self.hbox6, 5, 0, 1, 10)
+        self.grid.addWidget(self.info, 6, 0, 4, 10)
+        self.grid.addWidget(self.save_btn, 10, 9, 1, 1)
 
     @Slot()
-    def save_novel(self):
+    def save_btn_clicked(self):
         '''
         保存小说
         '''
@@ -153,10 +183,15 @@ class DownloadPage(QtWidgets.QWidget):
         self.line2.setEnabled(False)
         self.line3.setEnabled(False)
         self.line4.setEnabled(False)
-        self.saveBtn.setEnabled(False)
+        self.save_path_btn.setEnabled(False)
+        self.save_path_line.setEnabled(False)
+        self.novel_name_line.setEnabled(False)
+        self.save_btn.setEnabled(False)
+
         sp = spider.Spider(self.line2.text(), self.line1.text(),
                            self.line3.text(), self.line4.text())
-        file_path = sys.path[0] + '/道诡异仙.txt'
+        file_path = self.save_path_line.text(
+        ) + '/' + self.novel_name_line.text()
         is_append = False
         start_chapter = 1
         self.th.setting(sp, file_path, is_append, start_chapter)
@@ -170,8 +205,8 @@ class DownloadPage(QtWidgets.QWidget):
         @param s 新的提示信息
         '''
         self.info.setText(self.info.toPlainText() + s)  # 追加新信息
-        self.info.verticalScrollBar().setValue(
-            self.info.verticalScrollBar().maximumHeight())  # 将滚条设置到最底下
+        vsb = self.info.verticalScrollBar()
+        vsb.setValue(vsb.maximumHeight())  # 将滚条设置到最底下
 
     @Slot()
     def save_finished(self):
@@ -182,7 +217,18 @@ class DownloadPage(QtWidgets.QWidget):
         self.line2.setEnabled(True)
         self.line3.setEnabled(True)
         self.line4.setEnabled(True)
-        self.saveBtn.setEnabled(True)
+        self.save_path_btn.setEnabled(True)
+        self.save_path_line.setEnabled(True)
+        self.novel_name_line.setEnabled(True)
+        self.save_btn.setEnabled(True)
+
+    @Slot()
+    def save_path_btn_clicked(self):
+        '''
+        选择保存路径按钮按下
+        '''
+        path = QtWidgets.QFileDialog.getExistingDirectory(self, '选择保存路径')
+        if path: self.save_path_line.setText(path)
 
 
 class GUI(QtWidgets.QWidget):
