@@ -165,11 +165,6 @@ class DownloadPage(QtWidgets.QWidget):
         self.info.setReadOnly(True)
         self.info.setFont(font)
 
-        # 标准输出流转向
-        NStdout().msg_comming.connect(self.print_info)
-        sys.stdout = NStdout()
-        sys.stderr = NStdout()
-
         # 开始缓存按钮
         self.save_btn = QtWidgets.QPushButton()
         self.save_btn.setFont(font)
@@ -228,6 +223,7 @@ class DownloadPage(QtWidgets.QWidget):
         '''
         保存小说
         '''
+        NStdout().msg_comming.connect(self.print_info)
         self.line1.setEnabled(False)
         self.line2.setEnabled(False)
         self.line3.setEnabled(False)
@@ -269,6 +265,7 @@ class DownloadPage(QtWidgets.QWidget):
         '''
         保存完毕之后
         '''
+        NStdout().msg_comming.disconnect(self.print_info)
         self.line1.setEnabled(True)
         self.line2.setEnabled(True)
         self.line3.setEnabled(True)
@@ -310,6 +307,8 @@ class GUI(QtWidgets.QWidget):
             f: PySide6.QtCore.Qt.WindowType = QtCore.Qt.WindowType.Widget
     ) -> None:
         super().__init__(parent, f)
+        sys.stdout = NStdout()  # 标准输出流转向
+        sys.stderr = NStdout()
         self.initUI()
 
     def initUI(self):
@@ -317,8 +316,8 @@ class GUI(QtWidgets.QWidget):
 
         self.tab = QtWidgets.QTabWidget()
         self.tab.setFont(QtGui.QFont('微软雅黑', 10))
-        self.page = DownloadPage()
-        self.tab.addTab(self.page, '手机电子书')
+        self.page0 = DownloadPage()
+        self.tab.addTab(self.page0, '手机电子书')
 
         self.grid = QtWidgets.QGridLayout()
         self.setLayout(self.grid)
