@@ -307,7 +307,10 @@ class GUI(QtWidgets.QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('novel download')
+        self.setWindowTitle('Novel Download')
+
+        p = Path(__file__).resolve().parent / 'resources' / 'icon.svg'
+        self.setWindowIcon(QtGui.QIcon(QtGui.QPixmap(p)))
 
         self.tab = QtWidgets.QTabWidget()
         self.tab.setFont(QtGui.QFont('微软雅黑', 10))
