@@ -11,8 +11,7 @@ PARSER = 'lxml'
 
 class Spider:
 
-    def __init__(self, website: str, url: str, encoding: str,
-                 parser: str) -> None:
+    def __init__(self, website: str, url: str, encoding: str, parser: str) -> None:
         '''
         @param website 小说网站地址
         @param url 小说页面（目录页面）地址
@@ -64,15 +63,13 @@ class Spider:
 
             next_page = soup.find('span', {'class': 'right'})
             next_page_href = next_page.a.attrs.get('href', None)
-            if not next_page_href: break
+            if not next_page_href:
+                break
             url = self.website + next_page_href
 
         return res
 
-    def save_novel(self,
-                   file_path: str,
-                   is_append: bool,
-                   start_chapter: int = 1):
+    def save_novel(self, file_path: str, is_append: bool, start_chapter: int = 1):
         '''
         保存小说
 

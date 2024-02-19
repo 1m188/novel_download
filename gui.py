@@ -18,7 +18,8 @@ def singleton(cls, *args, **kw):
     instances = {}
 
     def wrapper():
-        if cls not in instances: instances[cls] = cls(*args, **kw)
+        if cls not in instances:
+            instances[cls] = cls(*args, **kw)
         return instances[cls]
 
     return wrapper
@@ -42,8 +43,7 @@ class DownloadThread(QtCore.QThread):
         self.start_chapter = start_chapter
 
     def run(self) -> None:
-        self.spider.save_novel(self.file_path, self.is_append,
-                               self.start_chapter)
+        self.spider.save_novel(self.file_path, self.is_append, self.start_chapter)
 
 
 @singleton
@@ -64,9 +64,9 @@ class DownloadPage(QtWidgets.QWidget):
     '''
 
     def __init__(
-            self,
-            parent: Optional[PySide6.QtWidgets.QWidget] = None,
-            f: PySide6.QtCore.Qt.WindowType = QtCore.Qt.WindowType.Widget
+        self,
+        parent: Optional[PySide6.QtWidgets.QWidget] = None,
+        f: PySide6.QtCore.Qt.WindowType = QtCore.Qt.WindowType.Widget,
     ) -> None:
         super().__init__(parent, f)
         self.th = DownloadThread()
@@ -82,8 +82,7 @@ class DownloadPage(QtWidgets.QWidget):
         self.label1.setText('小说页面网址')
 
         self.line1 = QtWidgets.QLineEdit()
-        self.line1.setContextMenuPolicy(
-            QtCore.Qt.ContextMenuPolicy.NoContextMenu)  # 取消右键菜单
+        self.line1.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)  # 取消右键菜单
         self.line1.setFont(font)
         self.line1.setText(spider.URL)
 
@@ -93,8 +92,7 @@ class DownloadPage(QtWidgets.QWidget):
         self.label2.setText('小说网站网址')
 
         self.line2 = QtWidgets.QLineEdit()
-        self.line2.setContextMenuPolicy(
-            QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.line2.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.line2.setFont(font)
         self.line2.setText(spider.WEBSITE)
 
@@ -104,8 +102,7 @@ class DownloadPage(QtWidgets.QWidget):
         self.label3.setText('网站内容编码')
 
         self.line3 = QtWidgets.QLineEdit()
-        self.line3.setContextMenuPolicy(
-            QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.line3.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.line3.setFont(font)
         self.line3.setText(spider.ENCODING)
 
@@ -115,8 +112,7 @@ class DownloadPage(QtWidgets.QWidget):
         self.label4.setText('网站元素解析器')
 
         self.line4 = QtWidgets.QLineEdit()
-        self.line4.setContextMenuPolicy(
-            QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.line4.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.line4.setFont(font)
         self.line4.setText(spider.PARSER)
 
@@ -155,13 +151,11 @@ class DownloadPage(QtWidgets.QWidget):
         self.start_chapter_line = QtWidgets.QLineEdit()
         self.start_chapter_line.setFont(font)
         self.start_chapter_line.setText('1')
-        self.start_chapter_line.textEdited.connect(
-            self.start_chapter_line_textEdited)
+        self.start_chapter_line.textEdited.connect(self.start_chapter_line_textEdited)
 
         # 信息输出
         self.info = QtWidgets.QTextEdit()
-        self.info.setContextMenuPolicy(
-            QtCore.Qt.ContextMenuPolicy.NoContextMenu)
+        self.info.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
         self.info.setReadOnly(True)
         self.info.setFont(font)
 
@@ -235,14 +229,16 @@ class DownloadPage(QtWidgets.QWidget):
         self.start_chapter_line.setEnabled(False)
         self.save_btn.setEnabled(False)
 
-        sp = spider.Spider(self.line2.text(), self.line1.text(),
-                           self.line3.text(), self.line4.text())
+        sp = spider.Spider(
+            self.line2.text(),
+            self.line1.text(),
+            self.line3.text(),
+            self.line4.text(),
+        )
 
-        file_path = os.path.join(self.save_path_line.text(),
-                                 self.novel_name_line.text())
+        file_path = os.path.join(self.save_path_line.text(), self.novel_name_line.text())
 
-        is_append = self.is_append_checkbox.checkState(
-        ) == QtCore.Qt.CheckState.Checked
+        is_append = self.is_append_checkbox.checkState() == QtCore.Qt.CheckState.Checked
 
         start_chapter = int(self.start_chapter_line.text())
 
@@ -283,17 +279,20 @@ class DownloadPage(QtWidgets.QWidget):
         选择保存路径按钮按下
         '''
         path = QtWidgets.QFileDialog.getExistingDirectory(self, '选择保存路径')
-        if path: self.save_path_line.setText(path)
+        if path:
+            self.save_path_line.setText(path)
 
     @Slot(str)
     def start_chapter_line_textEdited(self, s: str):
         '''
         用于约束开始章节的输入内容
         '''
-        if not s.isnumeric(): self.start_chapter_line.setText('1')
+        if not s.isnumeric():
+            self.start_chapter_line.setText('1')
         else:
             x = int(s)
-            if x < 1 or x > 2**31 - 1: self.start_chapter_line.setText('1')
+            if x < 1 or x > 2**31 - 1:
+                self.start_chapter_line.setText('1')
 
 
 class GUI(QtWidgets.QWidget):
@@ -301,11 +300,7 @@ class GUI(QtWidgets.QWidget):
     主界面
     '''
 
-    def __init__(
-            self,
-            parent: Optional[PySide6.QtWidgets.QWidget] = None,
-            f: PySide6.QtCore.Qt.WindowType = QtCore.Qt.WindowType.Widget
-    ) -> None:
+    def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None, f: PySide6.QtCore.Qt.WindowType = QtCore.Qt.WindowType.Widget) -> None:
         super().__init__(parent, f)
         sys.stdout = NStdout()  # 标准输出流转向
         sys.stderr = NStdout()
