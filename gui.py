@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import sys
 from typing import Optional
 import PySide6
@@ -124,7 +124,7 @@ class DownloadPage(QtWidgets.QWidget):
 
         self.save_path_line = QtWidgets.QLineEdit()
         self.save_path_line.setFont(font)
-        self.save_path_line.setText(sys.path[0])
+        self.save_path_line.setText(str(Path(sys.argv[0]).resolve().parent))
         self.save_path_line.setReadOnly(True)
 
         # 输入保存文件名
@@ -236,7 +236,7 @@ class DownloadPage(QtWidgets.QWidget):
             self.line4.text(),
         )
 
-        file_path = os.path.join(self.save_path_line.text(), self.novel_name_line.text())
+        file_path = str(Path(self.save_path_line.text()) / Path(self.novel_name_line.text()))
 
         is_append = self.is_append_checkbox.checkState() == QtCore.Qt.CheckState.Checked
 
