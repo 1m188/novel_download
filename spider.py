@@ -1,4 +1,3 @@
-import sys
 import requests
 from bs4 import BeautifulSoup
 from typing import List
@@ -81,14 +80,33 @@ class Spider:
         print('开始获取章节目录...')
         chapter_url_list = self.get_chapter_url_list()
         print('章节目录获取完毕')
+        print(f'总共 {len(chapter_url_list)} 章，从第 {start_chapter} 章开始')
         print('开始缓存')
+
         with open(file_path, 'a' if is_append else 'w', encoding='utf-8') as f:
             for i, v in enumerate(chapter_url_list[start_chapter - 1:]):
-                f.write(self.get_chapter(v))
+
+                # 有时候请求会出问题，因此出了问题反复请求几遍
+                # 直到超出一定次数仍然出问题则报错
+                cnt = 0  # 当前请求次数
+                flag = True
+                while flag:
+                    try:
+                        cnt += 1
+                        content = self.get_chapter(v)
+                        flag = False
+                    except Exception as e:
+                        if cnt >= 100:  # 请求最大次数
+                            raise e
+                        flag = True
+
+                f.write(content)
                 print(f'第{i + start_chapter}章缓存完毕')
         print('所有章节缓存完毕！')
 
 
 if __name__ == '__main__':
+    from pathlib import Path
     spider = Spider(WEBSITE, URL, ENCODING, PARSER)
-    spider.save_novel(sys.path[0] + '/道诡异仙.txt', False)
+    p = str(Path(__file__).resolve().parent / '道诡异仙.txt')
+    spider.save_novel(p, False)
