@@ -64,7 +64,7 @@ class Spider:
             next_page_href = next_page.a.attrs.get('href', None)
             if not next_page_href:
                 break
-            url = self.website + next_page_href
+            url = f'{self.website}/{next_page_href}'
 
         return res
 
