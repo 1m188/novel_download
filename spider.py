@@ -1,6 +1,7 @@
 import sys
 import requests
 from bs4 import BeautifulSoup
+from typing import List
 
 URL = 'http://www.waptxt.org/96031'
 WEBSITE = 'http://www.waptxt.org'
@@ -48,7 +49,7 @@ class Spider:
 
         return title_text + '\n' + cont_text + '\n\n'
 
-    def get_chapter_url_list(self) -> list[str]:
+    def get_chapter_url_list(self) -> List[str]:
         '''
         获取章节url的列表
         '''
