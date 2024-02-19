@@ -38,14 +38,28 @@ class Spider:
         其中，章节内容是每段进行分行
         '''
 
-        soup = self.get_bsobj(curl)
-        cont = soup.find('div', {'class': 'con_txt'})
-        title = soup.find('div', {'class': 'title'})
+        title_txt = None
+        txts = []
 
-        title_text = title.h1.text.strip()
-        cont_text = '\n'.join(cont.stripped_strings)
+        while True:  # 循环求取每一页的内容
+            soup = self.get_bsobj(curl)
 
-        return title_text + '\n' + cont_text + '\n\n'
+            if title_txt == None:
+                title = soup.find('div', {'class': 'title'})
+                title_txt = title.h1.text.strip()
+
+            cont = soup.find('div', {'class': 'con_txt'})
+            cont_txt = '\n'.join(cont.stripped_strings)
+            txts.append(cont_txt)
+
+            chapter_go = soup.find('div', {'class': 'chapter_go'})
+            next_chapter = chapter_go.find('a', {'id': 'xiazhang'})
+            if next_chapter.text.strip() == '下一章':
+                break
+            curl = f'{self.website}/{next_chapter.attrs["href"]}'
+
+        x = '\n'.join(txts)
+        return f'{title_txt}\n{x}\n\n'
 
     def get_chapter_url_list(self) -> List[str]:
         '''
@@ -110,3 +124,7 @@ if __name__ == '__main__':
     spider = Spider(WEBSITE, URL, ENCODING, PARSER)
     p = str(Path(__file__).resolve().parent / '道诡异仙.txt')
     spider.save_novel(p, False)
+
+    # spider = Spider(WEBSITE, URL, ENCODING, PARSER)
+    # x = spider.get_chapter('https://www.waptxt.org/96031/28391910.html')
+    # print(x)
