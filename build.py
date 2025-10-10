@@ -51,7 +51,8 @@ def pack_embed():
 
     with open('./build/embed/start.bat', 'w') as f:
         f.write(r'@echo off' + '\n')
-        f.write(r'%~dp0py\python.exe %~dp0src\gui.py' + '\n')
+        f.write(r'start "" "%~dp0py\pythonw.exe" "%~dp0src\gui.py"' + '\n')
+        f.write(r'exit' + '\n')
 
 
 if __name__ == "__main__":
