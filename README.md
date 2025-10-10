@@ -16,6 +16,13 @@
 ## Release
 见旁边的Releases页面。
 
+## Build
+使用 build.py 脚本进行构建，支持 pyinstaller 和 embed 两种方式。
+```shell
+python build.py --build pyinstaller
+python build.py --build embed
+```
+
 ## Images
 ![](./img/1.png)
 ![](./img/2.png)
