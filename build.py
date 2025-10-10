@@ -1,4 +1,8 @@
 import subprocess
+import os
+import zipfile
+from pathlib import Path
+import shutil
 
 
 def pack_pyinstaller():
@@ -12,5 +16,42 @@ def pack_pyinstaller():
     ])
 
 
+def pack_embed():
+    os.makedirs("./build/embed/py/Lib/site-packages", exist_ok=True)
+
+    with zipfile.ZipFile("./python-3.10.11-embed-amd64.zip", "r") as zipf:
+        zipf.extractall("./build/embed/py")
+
+    path = Path("./build/embed/py")
+    for file in path.rglob("*"):
+        if str(file).endswith('._pth'):
+            with open(file, 'a') as f:
+                f.write('import site\n')
+                f.write('../src\n')
+            break
+
+    subprocess.run([
+        'pip',
+        'install',
+        '-r',
+        'requirements_embed.txt',
+        '-t',
+        './build/embed/py/Lib/site-packages',
+    ])
+
+    os.makedirs('./build/embed/src', exist_ok=True)
+    shutil.copytree(
+        './src',
+        './build/embed/src',
+        ignore=shutil.ignore_patterns('*.pyc', '__pycache__'),
+        copy_function=shutil.copy2,
+        dirs_exist_ok=True,
+    )
+
+    with open('./build/embed/start.bat', 'w') as f:
+        f.write(r'@echo off' + '\n')
+        f.write(r'%~dp0py\python.exe %~dp0src\gui.py' + '\n')
+
+
 if __name__ == "__main__":
-    pack_pyinstaller()
+    pack_embed()
