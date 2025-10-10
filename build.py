@@ -3,6 +3,7 @@ import os
 import zipfile
 from pathlib import Path
 import shutil
+import argparse
 
 
 def pack_pyinstaller():
@@ -54,4 +55,19 @@ def pack_embed():
 
 
 if __name__ == "__main__":
-    pack_embed()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--build',
+        type=str,
+        choices=['pyinstaller', 'embed'],
+        default='pyinstaller',
+        help='build type',
+    )
+    args = parser.parse_args()
+
+    if args.build == 'pyinstaller':
+        pack_pyinstaller()
+    elif args.build == 'embed':
+        pack_embed()
+    else:
+        raise ValueError(f'Invalid build type: {args.build}')
