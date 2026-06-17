@@ -91,3 +91,43 @@ async fn test_get_chapter_url_list() {
     ];
     assert_eq!(list, want);
 }
+
+#[tokio::test]
+async fn test_get_chapter() {
+    let chap1 = r#"<html><body>
+<div class="title"><h1>第一章 测试</h1></div>
+<div class="con_txt"><p>段落一。</p><p>段落二。</p><br>  <p>段落三。</p></div>
+<div class="chapter_go"><a id="xiazhang" href="/96031/1p2.html">下一页</a></div>
+</body></html>"#;
+
+    let chap2 = r#"<html><body>
+<div class="title"><h1>第一章 测试</h1></div>
+<div class="con_txt"><p>段落四。</p></div>
+<div class="chapter_go"><a id="xiazhang" href="/96031/2.html">下一章</a></div>
+</body></html>"#;
+
+    let server = MockServer::start().await;
+
+    Mock::given(method("GET"))
+        .and(path(String::from("/96031/1.html")))
+        .respond_with(ResponseTemplate::new(200).set_body_string(chap1))
+        .mount(&server)
+        .await;
+
+    Mock::given(method("GET"))
+        .and(path(String::from("/96031/1p2.html")))
+        .respond_with(ResponseTemplate::new(200).set_body_string(chap2))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let spider = Spider::new(
+        server.uri(),
+        server.uri(),
+        "".to_string(),
+    );
+    let got = spider.get_chapter(&format!("{}/96031/1.html", server.uri())).await.unwrap();
+
+    let want = "第一章 测试\n段落一。\n段落二。\n段落三。\n段落四。\n\n";
+    assert_eq!(got, want);
+}

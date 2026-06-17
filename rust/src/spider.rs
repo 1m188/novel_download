@@ -76,7 +76,58 @@ impl Spider {
     }
 
     pub async fn get_chapter(&self, curl: &str) -> Result<String> {
-        todo!()
+        let title_selector = Selector::parse("div.title h1").unwrap();
+        let content_selector = Selector::parse("div.con_txt").unwrap();
+        let next_selector = Selector::parse("div.chapter_go a#xiazhang").unwrap();
+
+        let mut curl = curl.to_string();
+        let mut title = String::new();
+        let mut title_set = false;
+        let mut texts: Vec<String> = Vec::new();
+
+        loop {
+            let doc = self.get_bsobj(&curl).await?;
+
+            if !title_set {
+                title = doc
+                    .select(&title_selector)
+                    .next()
+                    .map(|el| el.text().collect::<String>().trim().to_string())
+                    .ok_or_else(|| anyhow::anyhow!("未找到 div.title h1"))?;
+                title_set = true;
+            }
+
+            let content = doc
+                .select(&content_selector)
+                .next()
+                .ok_or_else(|| anyhow::anyhow!("未找到 div.con_txt"))?;
+            let page_text = content
+                .text()
+                .map(|t| t.trim().to_string())
+                .filter(|t| !t.is_empty())
+                .collect::<Vec<_>>()
+                .join("\n");
+            texts.push(page_text);
+
+            let next = doc
+                .select(&next_selector)
+                .next()
+                .ok_or_else(|| anyhow::anyhow!("未找到 a#xiazhang"))?;
+
+            let next_text: String = next.text().collect::<String>().trim().to_string();
+            if next_text == "下一章" {
+                break;
+            }
+
+            let href = next
+                .value()
+                .attr("href")
+                .ok_or_else(|| anyhow::anyhow!("a#xiazhang 缺少 href"))?;
+            let href = href.trim_start_matches('/');
+            curl = format!("{}/{}", self.website, href);
+        }
+
+        Ok(format!("{}\n{}\n\n", title, texts.join("\n")))
     }
 
     pub async fn save_novel(
