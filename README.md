@@ -8,7 +8,7 @@
 - 章节内分页拼接（同一个章节可能分多页显示）
 - 支持从指定章节开始下载，支持追加到已有文件
 - 输出 UTF-8 编码，排版适配微信读书等本地阅读器
-- 两种实现：**Python**（带 GUI）和 **Go**（命令行）
+- 三种实现：**Python**（带 GUI）、**Go**（命令行）和 **Rust**（命令行）
 
 ## 快速开始
 
@@ -21,6 +21,9 @@ python src/gui.py
 
 # Go 命令行
 cd go && go run .
+
+# Rust 命令行
+cd rust && cargo run
 ```
 
 ## 使用方法
@@ -46,6 +49,22 @@ cd go && go build -o novel-download .
 
 # 从第 50 章开始，追加模式
 ./novel-download -url http://www.waptxt.org/96031 -o 道诡异仙.txt -start 50 -append
+```
+
+### Rust（命令行）
+
+```bash
+# 安装
+cd rust && cargo build --release
+
+# 默认下载
+./target/release/novel_download
+
+# 指定书目和输出路径
+./target/release/novel_download --url http://www.waptxt.org/96031 -o 道诡异仙.txt
+
+# 从第 50 章开始，追加模式
+./target/release/novel_download --url http://www.waptxt.org/96031 -o 道诡异仙.txt --start 50 --append
 ```
 
 | 参数 | 说明 | 默认值 |
@@ -79,6 +98,17 @@ golang.org/x/text   （GBK 解码）
 
 安装：`cd go && go mod download`
 
+### Rust
+
+```
+clap      （命令行参数解析）
+ureq      （HTTP 客户端）
+encoding_rs（GBK 解码）
+scraper   （HTML 解析 + CSS 选择器）
+```
+
+安装：`cd rust && cargo build`
+
 ## 构建
 
 `build.py` 支持两种打包模式：
@@ -95,6 +125,7 @@ python build.py --build embed
 
 ```bash
 cd go && go test ./...
+cd rust && cargo test
 ```
 
 ## 截图

@@ -4,9 +4,10 @@
 
 `novel_download` 是一个小说爬取下载工具，从 **手机电子书**（http://www.waptxt.org）抓取小说章节，格式化后保存为 UTF-8 编码的 `.txt` 文件，方便本地阅读。最初为下载《道诡异仙》而写，支持该站点的任意小说。
 
-项目包含两套独立实现，并列维护：
+项目包含三套独立实现，并列维护：
 - **Python**（`src/`）—— 功能完整，带 PySide6 图形界面
 - **Go**（`go/`）—— 纯命令行，逻辑严格移植自 Python 版
+- **Rust**（`rust/`）—— 纯命令行，依赖 clap + ureq + encoding_rs + scraper
 
 ## 目录结构
 
@@ -25,6 +26,14 @@ novel_download/
 │   ├── spider_test.go          # 测试：目录分页、章节分页、GBK 解码、UA 请求头
 │   ├── go.mod / go.sum         # 依赖：x/net、x/text
 │   └── README.md               # Go 版使用说明
+├── rust/                        # Rust 实现（独立的 CLI 实现）
+│   ├── Cargo.toml               # 依赖：clap、ureq、encoding_rs、scraper
+│   ├── src/
+│   │   ├── main.rs              # CLI 入口（clap derive）
+│   │   ├── spider.rs            # 核心爬虫（Spider 结构体 + 下载逻辑）
+│   │   ├── htmlutil.rs          # HTML 文本提取辅助
+│   │   └── fileutil.rs          # 文件打开辅助
+│   └── README.md                # Rust 版使用说明
 ├── build.py                    # 构建脚本：支持 pyinstaller 和 embed（便携 Python）两种模式
 ├── pack.spec                   # PyInstaller 配置文件
 ├── requirements.txt            # Python 依赖（bs4、lxml、requests、PySide6、pyinstaller）
@@ -72,6 +81,16 @@ novel_download/
 - 翻页链接拼接：`Website + "/" + href`（额外加斜杠，与 Python 行为一致，不做"修正"）
 - 输出格式：`标题\n正文\n\n`，章节内各页正文用 `\n` 连接
 
+### Rust 版（命令行）
+
+`rust/src/spider.rs` 为独立的 CLI 实现：
+- `Spider` 结构体包含 `website`、`url`、`encoding`
+- `get_bs_obj` —— HTTP GET + 可选 GBK 解码 + HTML 解析（scraper / html5ever）
+- `get_chapter_url_list` / `get_chapter` / `save_novel` —— 行为一致，相同的重试逻辑（100 次，无退避）
+- `rust/src/htmlutil.rs` —— HTML 文本提取辅助函数：`text_of`、`stripped_strings`
+- `rust/src/fileutil.rs` —— 文件打开辅助：`open_append`、`create`
+- URL 拼接规则（目录不加斜杠、翻页加斜杠）与 Python/Go 一致
+
 ### 构建系统
 
 `build.py` 支持两种构建模式：
@@ -91,6 +110,12 @@ novel_download/
 - 使用 `(T, error)` 错误返回，不使用异常
 - 在 `go/` 目录下运行 `go test ./...` 执行测试
 - 依赖：`golang.org/x/net`（HTML 解析）、`golang.org/x/text`（GBK 解码）
+
+### Rust
+- 标准 Rust 规范，`cargo fmt` 风格
+- 使用 `Result<T, Box<dyn Error>>` 错误返回
+- 在 `rust/` 目录下运行 `cargo test` 执行测试
+- 依赖：`clap`（CLI 参数）、`ureq`（HTTP）、`encoding_rs`（GBK 解码）、`scraper`（HTML 解析）
 
 ### 通用
 - 输出文件始终为 **UTF-8** 编码，与源编码无关
@@ -115,6 +140,13 @@ go run . -url http://www.waptxt.org/96031 -o output.txt -start 50 -append
 
 # Go 编译
 cd go && go build -o novel-download .
+
+# Rust 命令行（在 rust/ 目录下）
+cargo run
+cargo run -- --url http://www.waptxt.org/96031 -o output.txt --start 50 --append
+
+# Rust 编译
+cd rust && cargo build --release
 ```
 
 ### 构建
@@ -128,6 +160,7 @@ python build.py --build embed          # 生成便携 Python 包
 
 ```bash
 cd go && go test ./...
+cd rust && cargo test
 ```
 
 ### 添加新的小说站点
@@ -135,4 +168,5 @@ cd go && go test ./...
 1. 创建新的 `Spider` 子类或实例，配置对应的 website/URL/encoding
 2. Python：在 `gui.py` 的 `GUI.initUI()` 中添加新标签页
 3. Go：通过命令行参数指定不同的 URL/website
-4. 确保新站点的 HTML 结构兼容现有选择器（`div.title`、`div.con_txt`、`div.chapter_go`、`a#xiazhang`、`dl > a`、`span.right`）
+4. Rust：通过命令行参数指定不同的 URL/website
+5. 确保新站点的 HTML 结构兼容现有选择器（`div.title`、`div.con_txt`、`div.chapter_go`、`a#xiazhang`、`dl > a`、`span.right`）
