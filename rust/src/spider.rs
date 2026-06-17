@@ -24,8 +24,24 @@ impl Spider {
         }
     }
 
-    async fn get_bsobj(&self, url: &str) -> Result<Html> {
-        todo!()
+    pub async fn get_bsobj(&self, url: &str) -> Result<Html> {
+        let response = self
+            .client
+            .get(url)
+            .header("User-Agent", USER_AGENT)
+            .send()
+            .await?;
+
+        let bytes = response.bytes().await?;
+
+        let text = if self.encoding.eq_ignore_ascii_case("gbk") {
+            let (cow, _, _) = encoding_rs::GBK.decode(&bytes);
+            cow.into_owned()
+        } else {
+            String::from_utf8_lossy(&bytes).into_owned()
+        };
+
+        Ok(Html::parse_document(&text))
     }
 
     pub async fn get_chapter_url_list(&self) -> Result<Vec<String>> {
