@@ -22,6 +22,13 @@ const (
 	DefaultEncoding = "gbk"                         // 网站内容编码
 )
 
+// 浏览器 User-Agent。站点会拦截 requests/net/http 的默认 UA，
+// 统一带上浏览器 UA 以正常访问。
+const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+// httpClient 所有请求复用同一 Client（默认跟随重定向、自动 gzip 解压）。
+var httpClient = &http.Client{}
+
 // Spider 对应 spider.py 的 Spider 类。
 //
 // Website  小说网站地址
@@ -35,7 +42,13 @@ type Spider struct {
 
 // getBSObj 对应 get_bsobj：请求 url，按指定编码解码，返回解析后的 HTML 根节点。
 func (s *Spider) getBSObj(url string) (*html.Node, error) {
-	resp, err := http.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", userAgent) // 浏览器 UA，避免被站点拦截
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

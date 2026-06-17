@@ -127,3 +127,24 @@ func TestGBKDecode(t *testing.T) {
 		t.Errorf("GBK decode failed, body=%q", b.String())
 	}
 }
+
+// 验证 getBSObj 会带上浏览器 User-Agent（站点会拦截默认 UA）。
+func TestUserAgentSent(t *testing.T) {
+	var gotUA string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.Header.Get("User-Agent")
+		w.Write([]byte("<html></html>"))
+	}))
+	defer srv.Close()
+
+	s := &Spider{Website: srv.URL, URL: srv.URL, Encoding: ""}
+	if _, err := s.getBSObj(srv.URL); err != nil {
+		t.Fatalf("getBSObj: %v", err)
+	}
+	if gotUA != userAgent {
+		t.Errorf("User-Agent = %q, want %q", gotUA, userAgent)
+	}
+	if !strings.Contains(gotUA, "Mozilla") {
+		t.Errorf("User-Agent %q 不像浏览器 UA", gotUA)
+	}
+}

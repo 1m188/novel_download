@@ -7,6 +7,9 @@ WEBSITE = 'http://www.waptxt.org'
 ENCODING = 'gbk'
 PARSER = 'lxml'
 
+# 浏览器 User-Agent。站点会拦截 requests 的默认 UA，统一带上浏览器 UA 以正常访问。
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+
 
 class Spider:
 
@@ -24,7 +27,8 @@ class Spider:
         self.parser = parser
 
     def get_bsobj(self, url: str) -> BeautifulSoup:
-        response = requests.get(url)
+        headers = {'User-Agent': USER_AGENT}
+        response = requests.get(url, headers=headers)
         response.encoding = self.encoding
         return BeautifulSoup(response.text, self.parser)
 
