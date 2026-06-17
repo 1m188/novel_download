@@ -1,0 +1,8 @@
+# 编译产物
+/target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
