@@ -1,5 +1,5 @@
 use anyhow::Result;
-use scraper::Html;
+use scraper::{Html, Selector};
 
 pub const DEFAULT_URL: &str = "http://www.waptxt.org/96031";
 pub const DEFAULT_WEBSITE: &str = "http://www.waptxt.org";
@@ -45,7 +45,34 @@ impl Spider {
     }
 
     pub async fn get_chapter_url_list(&self) -> Result<Vec<String>> {
-        todo!()
+        let mut url = self.url.clone();
+        let mut result = Vec::new();
+
+        let dl_a_selector = Selector::parse("dl a").unwrap();
+        let next_page_selector = Selector::parse("span.right a").unwrap();
+
+        loop {
+            let doc = self.get_bsobj(&url).await?;
+
+            for element in doc.select(&dl_a_selector) {
+                if let Some(href) = element.value().attr("href") {
+                    result.push(format!("{}{}", self.website, href));
+                }
+            }
+
+            let next_href = doc
+                .select(&next_page_selector)
+                .next()
+                .and_then(|el| el.value().attr("href"))
+                .map(|h| h.to_string());
+
+            match next_href {
+                Some(href) => url = format!("{}/{}", self.website, href),
+                None => break,
+            }
+        }
+
+        Ok(result)
     }
 
     pub async fn get_chapter(&self, curl: &str) -> Result<String> {
