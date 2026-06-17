@@ -20,7 +20,7 @@ pub struct Spider {
 }
 
 impl Spider {
-    /// 对应 get_bsobj：请求 url，按指定编码解码，返回解析后的 HTML。
+    /// 请求 url，按指定编码解码，返回解析后的 HTML。
     fn get_bs_obj(&self, url: &str) -> Result<Html, Box<dyn std::error::Error>> {
         let resp = ureq::get(url)
             .header("User-Agent", USER_AGENT)
@@ -40,12 +40,12 @@ impl Spider {
         Ok(Html::parse_document(&text))
     }
 
-    /// 对应 get_chapter：获取章节名称及其内容。
+    /// 获取章节名称及其内容。
     ///
-    /// curl 章节地址
-    /// 返回: 章节名称\n章节内容\n\n
+    /// curl 章节地址。
+    /// 返回格式：章节名称\n章节内容\n\n
     ///
-    /// 章节内可能分页，通过 a#xiazhang 链接翻页，直到文本为"下一章"时停止。
+    /// 章节内可能分页，通过 a#xiazhang 链接翻页，直到链接文本为"下一章"时停止。
     pub fn get_chapter(&self, curl: &str) -> Result<String, Box<dyn std::error::Error>> {
         let mut title_txt: Option<String> = None;
         let mut txts: Vec<String> = Vec::new();
@@ -90,7 +90,7 @@ impl Spider {
         Ok(format!("{}\n{}\n\n", title_txt.unwrap_or_default(), body))
     }
 
-    /// 对应 get_chapter_url_list：获取章节 url 的列表（含目录分页）。
+    /// 获取所有章节 URL 的列表（含目录分页）。
     pub fn get_chapter_url_list(&self) -> Result<Vec<String>, Box<dyn std::error::Error>> {
         let mut url = self.url.clone();
         let mut res: Vec<String> = Vec::new();
@@ -101,7 +101,7 @@ impl Spider {
             let sel_dl_a = Selector::parse("dl a").unwrap();
             for a in doc.select(&sel_dl_a) {
                 if let Some(href) = a.attr("href") {
-                    // 目录条目：直接拼接，不加斜杠（与 Python 一致）
+                    // 目录条目：直接拼接，不加斜杠
                     res.push(format!("{}{}", self.website, href));
                 }
             }
@@ -114,7 +114,7 @@ impl Spider {
                 .map(|s| s.to_string());
 
             match next_href {
-                // 翻页：额外加斜杠（与 Python 一致）
+                // 翻页：额外加斜杠
                 Some(href) => url = format!("{}/{}", self.website, href),
                 None => break,
             }
@@ -123,7 +123,7 @@ impl Spider {
         Ok(res)
     }
 
-    /// 对应 save_novel：保存小说。
+    /// 下载并保存小说。
     ///
     /// file_path     保存文件路径
     /// is_append     是否追加
