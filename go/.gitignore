@@ -1,0 +1,7 @@
+# 编译产物
+/novel-download
+/novel-download.exe
+
+# 测试覆盖率
+*.out
+*.test
