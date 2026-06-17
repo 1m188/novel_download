@@ -1,5 +1,6 @@
 use anyhow::Result;
 use scraper::{Html, Selector};
+use tokio::io::AsyncWriteExt;
 
 pub const DEFAULT_URL: &str = "http://www.waptxt.org/96031";
 pub const DEFAULT_WEBSITE: &str = "http://www.waptxt.org";
@@ -136,6 +137,54 @@ impl Spider {
         is_append: bool,
         start_chapter: usize,
     ) -> Result<()> {
-        todo!()
+        println!("开始获取章节目录...");
+        let chapter_url_list = self.get_chapter_url_list().await?;
+        println!("章节目录获取完毕");
+        println!(
+            "总共 {} 章，从第 {} 章开始",
+            chapter_url_list.len(),
+            start_chapter
+        );
+        println!("开始缓存");
+
+        let mut file = tokio::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(is_append)
+            .truncate(!is_append)
+            .open(file_path)
+            .await?;
+
+        let start_idx = if start_chapter > 0 {
+            start_chapter - 1
+        } else {
+            0
+        };
+
+        for (i, chapter_url) in chapter_url_list.iter().enumerate().skip(start_idx) {
+            let chapter_num = i + 1;
+            let mut retries: u32 = 0;
+            let content = loop {
+                retries += 1;
+                match self.get_chapter(chapter_url).await {
+                    Ok(content) => break content,
+                    Err(e) => {
+                        if retries >= MAX_RETRIES {
+                            return Err(anyhow::anyhow!(
+                                "第{}章下载失败（已重试{}次）: {}",
+                                chapter_num,
+                                retries,
+                                e
+                            ));
+                        }
+                        continue;
+                    }
+                }
+            };
+            file.write_all(content.as_bytes()).await?;
+            println!("第{}章缓存完毕", chapter_num);
+        }
+        println!("所有章节缓存完毕！");
+        Ok(())
     }
 }
